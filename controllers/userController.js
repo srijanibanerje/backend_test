@@ -44,21 +44,28 @@ export const registerUser = async (req, res) => {
         //const hashedPassword = await bcrypt.hash(password, 10);
 
         // 4️⃣ Upload images to S3
-        let aadharPhotoFrontUrl = null;
-        let aadharPhotoBackUrl = null;
-        let panPhotoUrl = null;
-
-        if (req.files) {
-            if (req.files.aadharFront && req.files.aadharFront[0]) {
-                aadharPhotoFrontUrl = await uploadFileToS3(req.files.aadharFront[0], "aadhar-front");
-            }
-            if (req.files.aadharBack && req.files.aadharBack[0]) {
-                aadharPhotoBackUrl = await uploadFileToS3(req.files.aadharBack[0], "aadhar-back");
-            }
-            if (req.files.panPhoto && req.files.panPhoto[0]) {
-                panPhotoUrl = await uploadFileToS3(req.files.panPhoto[0], "pan-photo");
-            }
+        if (
+            !req.files ||
+            !req.files.aadharFront ||
+            !req.files.aadharBack ||
+            !req.files.panPhoto
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Aadhar front, Aadhar back, and PAN photo are required for registration.",
+            });
         }
+
+        // 5️⃣ Upload images to S3
+        const aadharPhotoFrontUrl = await uploadFileToS3(
+            req.files.aadharFront[0],
+            "aadhar-front"
+        );
+        const aadharPhotoBackUrl = await uploadFileToS3(
+            req.files.aadharBack[0],
+            "aadhar-back"
+        );
+        const panPhotoUrl = await uploadFileToS3(req.files.panPhoto[0], "pan-photo");
 
         // 5️⃣ Generate referral link
         const referralLink = `${BASE_REFERRAL_URL}${userId}`;
@@ -614,7 +621,7 @@ export const testEmail = async (req, res) => {
         });
 
 
-    } catch (error) { 
+    } catch (error) {
         console.error("❌ Error sending test email:", error);
         res.status(500).json({
             success: false,
