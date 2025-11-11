@@ -7,6 +7,7 @@ import CourseDetails from "../models/CourseDetails.js";
 import { generateUniqueUserId } from "../utils/generateUserId.js";
 import { uploadFileToS3 } from "../utils/uploadToS3.js";
 import { generateToken } from "../utils/generateToken.js";
+import { sendMail } from '../mailer.js';
 
 const BASE_REFERRAL_URL = "https://synthosphereacademy.com/register/";
 
@@ -115,6 +116,22 @@ export const registerUser = async (req, res) => {
         //     validityEnd: null,
         //     purchaseHistory: [],
         // });
+
+
+        // Sending Mail
+        const subject = `Welcome to Synthosphere Academy, ${name || "User"}!`;
+        const html = `
+            <h2>Welcome to Synthosphere Academy</h2>
+            <p>Hi ${name || "there"},</p>
+            <p>Your account has been created successfully.</p>
+            <p><strong>User ID:</strong> ${userId}</p>
+            <p><strong>Password:</strong> ${password}</p>
+            <p>Login here: <a href="https://synthosphereacademy.com/login">https://synthosphereacademy.com/login</a></p>
+            <br/>
+        `;
+
+        await sendMail(email, subject, html);
+
 
         // 9️⃣ Success response
         return res.status(201).json({
@@ -562,6 +579,46 @@ export const getUserFullDetails = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Failed to fetch full user details",
+            error: error.message,
+        });
+    }
+};
+
+
+//Email Testing
+export const testEmail = async (req, res) => {
+    try {
+        const { name, phone, email } = req.body;
+
+        if (!name || !phone || !email) {
+            return res.status(400).json({
+                success: false,
+                message: "name, phone, and email are required",
+            });
+        }
+
+        const subject = `Welcome to Grow Bit Global, ${name || "User"}!`;
+        const html = `
+            <h2>Welcome to Grow Bit Global</h2>
+            <p>Hi ${name || "there"},</p>
+            <p>Your account has been created successfully.</p>
+            <p><strong>Phone No.:</strong> ${phone}</p>
+            <br/>
+        `;
+
+        await sendMail(email, subject, html);
+
+        res.status(200).json({
+            success: true,
+            message: "Test email sent successfully",
+        });
+
+
+    } catch (error) { 
+        console.error("❌ Error sending test email:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to send test email",
             error: error.message,
         });
     }

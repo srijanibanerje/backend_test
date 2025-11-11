@@ -1,5 +1,5 @@
 import express from "express";
-import { getAadharPhoto, getAllUsers, getReferredSelfPoints, getuser_by_id, getUserFullDetails, loginUser, registerUser, updateUserDetails, updateUserStatus } from "../controllers/userController.js";
+import { getAadharPhoto, getAllUsers, getReferredSelfPoints, getuser_by_id, getUserFullDetails, loginUser, registerUser, testEmail, updateUserDetails, updateUserStatus } from "../controllers/userController.js";
 import upload from "../middleware/upload.js";
 import { checkout, getorderdetails_by_userid, getUserCheckoutDetails, paymentverification_students } from "../controllers/checkoutController.js";
 
@@ -29,5 +29,6 @@ router.get("/:userId", getUserCheckoutDetails);  //fetch checkout details by use
 
 
 router.get("/referred-selfpoints/:userId", getReferredSelfPoints); //fetch referred and self points for a user
+router.post("/email-test", testEmail); //test email sending
 
 export default router;
