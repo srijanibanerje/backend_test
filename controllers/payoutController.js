@@ -1,5 +1,6 @@
 import Payout from "../models/Payout.js";
 import User from "../models/User.js";
+import BankDetails from "../models/BankDetails.js";
 import { calculateRealtimeReferralPoints } from "../utils/calculateReferralPoints.js";
 
 // ✅ POST /api/payout/run → runs payout for ALL users
@@ -131,6 +132,12 @@ export const updatePayoutStatus = async (req, res) => {
         const validStatuses = ["pending", "completed", "failed"];
         if (!validStatuses.includes(status.toLowerCase())) {
             return res.status(400).json({ success: false, message: "Invalid status value" });
+        }
+
+        //Check if the user has the verified kyc status
+        const kycStatus = await BankDetails.findOne({ userId });
+        if (!kycStatus || kycStatus.status !== "verified") {
+            return res.status(400).json({ success: false, message: "User KYC is not verified. Cannot update payout status." });
         }
 
         // Find user payout record
