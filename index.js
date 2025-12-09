@@ -43,7 +43,7 @@ app.use("/api/referral", referralRoutes);
 app.use("/api/payout", payoutRoutes);
 app.use("/api/bankdetails", bankDetailsRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("api/rank", rankRoutes);
+app.use("/api/rank", rankRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
