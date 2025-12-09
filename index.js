@@ -11,6 +11,7 @@ import bankDetailsRoutes from "./routes/bankDetailsRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import payoutRoutes from "./routes/payoutRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
+import rankRoutes from "./routes/rankRoutes.js";
 
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.use("/api/referral", referralRoutes);
 app.use("/api/payout", payoutRoutes);
 app.use("/api/bankdetails", bankDetailsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("api/rank", rankRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
