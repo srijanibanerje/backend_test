@@ -180,3 +180,65 @@ export const getUserRanks = async (req, res) => {
         });
     }
 };
+
+
+
+// Approve rank status for a user
+export const approveRankStatus = async (req, res) => {
+    try {
+        const { userId, rankName } = req.body;
+
+        if (!userId || !rankName) {
+            return res.status(400).json({
+                success: false,
+                message: "userId and rankName are required"
+            });
+        }
+
+        // Step 1: Find user’s rank document
+        const rankDoc = await Rank.findOne({ userId });
+
+        if (!rankDoc) {
+            return res.status(404).json({
+                success: false,
+                message: "User rank record not found"
+            });
+        }
+
+        // Step 2: Find the specific reward by rankName
+        const reward = rankDoc.rewards.find(r => r.rankName === rankName);
+
+        if (!reward) {
+            return res.status(404).json({
+                success: false,
+                message: "Rank with this name not found in user's rewards"
+            });
+        }
+
+        // Step 3: Update only if status is pending
+        if (reward.status !== "pending") {
+            return res.status(400).json({
+                success: false,
+                message: `Rank status is already '${reward.status}'`
+            });
+        }
+
+        reward.status = "approved"; // update status
+
+        await rankDoc.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Rank status updated to approved",
+            data: rankDoc
+        });
+
+    } catch (error) {
+        console.error("Approve Rank Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
