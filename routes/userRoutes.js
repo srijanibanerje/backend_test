@@ -23,7 +23,17 @@ router.post("/paymentverification_students", paymentverification_students);
 router.post("/getuserdetails", getuser_by_id);   //fetch user details by id
 router.post("/getorderdetailsbyuser", getorderdetails_by_userid);  //fetch order details by user id
 router.get("/all", getAllUsers);  //fetch all users
-router.put("/update/:userId", updateUserDetails);  //update user details by id
+// router.put("/update/:userId", updateUserDetails);  
+router.put(
+  "/update/:userId",
+  upload.fields([
+    { name: "aadharFront", maxCount: 1 },
+    { name: "aadharBack", maxCount: 1 },
+    { name: "panPhoto", maxCount: 1 },
+    { name: "passbookPhoto", maxCount: 1 },
+  ]),
+  updateUserDetails
+);  //update user details by id
 router.put("/status/:userId", updateUserStatus);  //update user status by id
 router.get("/:userId", getUserCheckoutDetails);  //fetch checkout details by user id
 

@@ -350,15 +350,27 @@ export const getuser_by_id = async (req, res) => {
 export const updateUserDetails = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { name, email, phone, password, aadharNo } = req.body;
+        const {
+            name,
+            email,
+            phone,
+            password,
+            aadharNo,
+            panNo,
+            nameAsPerDocument,
+            bankName,
+            branchName,
+            accountNo,
+            ifscCode
+        } = req.body;
 
-        // Find user first
+        // 1️⃣ Find user
         const user = await User.findOne({ userId });
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Build dynamic update object
+        // 2️⃣ Build dynamic user updates
         const updates = {};
 
         if (name) updates.name = name;
@@ -372,43 +384,164 @@ export const updateUserDetails = async (req, res) => {
         if (phone) {
             const existingPhone = await User.findOne({ phone, userId: { $ne: userId } });
             if (existingPhone) {
-                return res.status(400).json({ success: false, message: "Phone number already in use" });
+                return res.status(400).json({ success: false, message: "Phone already in use" });
             }
             updates.phone = phone;
         }
         if (aadharNo) {
             const existingAadhar = await User.findOne({ aadharNo, userId: { $ne: userId } });
             if (existingAadhar) {
-                return res.status(400).json({ success: false, message: "Aadhaar number already in use" });
+                return res.status(400).json({ success: false, message: "Aadhar already in use" });
             }
             updates.aadharNo = aadharNo;
         }
+        if (panNo) {
+            const existingPan = await User.findOne({ panNo, userId: { $ne: userId } });
+            if (existingPan) {
+                return res.status(400).json({ success: false, message: "PAN already in use" });
+            }
+            updates.panNo = panNo;
+        }
         if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            updates.password = hashedPassword;
+            const hashed = await bcrypt.hash(password, 10);
+            updates.password = hashed;
         }
 
-        // Update user
+        // 3️⃣ Image uploads (Aadhar & PAN)
+        if (req.files) {
+            if (req.files.aadharFront?.[0]) {
+                updates.aadharPhotoFront = await uploadFileToS3(
+                    req.files.aadharFront[0],
+                    "aadhar-front"
+                );
+            }
+
+            if (req.files.aadharBack?.[0]) {
+                updates.aadharPhotoBack = await uploadFileToS3(
+                    req.files.aadharBack[0],
+                    "aadhar-back"
+                );
+            }
+
+            if (req.files.panPhoto?.[0]) {
+                updates.panPhoto = await uploadFileToS3(
+                    req.files.panPhoto[0],
+                    "pan-photo"
+                );
+            }
+        }
+
+        // 4️⃣ Update User model
         const updatedUser = await User.findOneAndUpdate(
             { userId },
             { $set: updates },
             { new: true }
         );
 
-        res.status(200).json({
+        // 5️⃣ Update BankDetails if provided
+        let bankUpdates = {};
+
+        if (bankName) bankUpdates.bankName = bankName;
+        if (branchName) bankUpdates.branchName = branchName;
+        if (accountNo) bankUpdates.accountNo = accountNo;
+        if (ifscCode) bankUpdates.ifscCode = ifscCode;
+        if (nameAsPerDocument) bankUpdates.nameAsPerDocument = nameAsPerDocument;
+
+        // Passbook photo upload
+        if (req.files?.passbookPhoto?.[0]) {
+            bankUpdates.passbookPhoto = await uploadFileToS3(
+                req.files.passbookPhoto[0],
+                "passbook-photo"
+            );
+        }
+
+        if (Object.keys(bankUpdates).length > 0) {
+            await BankDetails.findOneAndUpdate(
+                { userId },
+                { $set: bankUpdates },
+                { new: true }
+            );
+        }
+
+        return res.status(200).json({
             success: true,
             message: "User details updated successfully",
-            data: updatedUser,
+            data: updatedUser
         });
+
     } catch (error) {
         console.error("Error updating user details:", error);
         res.status(500).json({
             success: false,
             message: "Failed to update user details",
-            error: error.message,
+            error: error.message
         });
     }
 };
+
+
+// export const updateUserDetails = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+//         const { name, email, phone, password, aadharNo } = req.body;
+
+//         // Find user first
+//         const user = await User.findOne({ userId });
+//         if (!user) {
+//             return res.status(404).json({ success: false, message: "User not found" });
+//         }
+
+//         // Build dynamic update object
+//         const updates = {};
+
+//         if (name) updates.name = name;
+//         if (email) {
+//             const existingEmail = await User.findOne({ email, userId: { $ne: userId } });
+//             if (existingEmail) {
+//                 return res.status(400).json({ success: false, message: "Email already in use" });
+//             }
+//             updates.email = email;
+//         }
+//         if (phone) {
+//             const existingPhone = await User.findOne({ phone, userId: { $ne: userId } });
+//             if (existingPhone) {
+//                 return res.status(400).json({ success: false, message: "Phone number already in use" });
+//             }
+//             updates.phone = phone;
+//         }
+//         if (aadharNo) {
+//             const existingAadhar = await User.findOne({ aadharNo, userId: { $ne: userId } });
+//             if (existingAadhar) {
+//                 return res.status(400).json({ success: false, message: "Aadhaar number already in use" });
+//             }
+//             updates.aadharNo = aadharNo;
+//         }
+//         if (password) {
+//             const hashedPassword = await bcrypt.hash(password, 10);
+//             updates.password = hashedPassword;
+//         }
+
+//         // Update user
+//         const updatedUser = await User.findOneAndUpdate(
+//             { userId },
+//             { $set: updates },
+//             { new: true }
+//         );
+
+//         res.status(200).json({
+//             success: true,
+//             message: "User details updated successfully",
+//             data: updatedUser,
+//         });
+//     } catch (error) {
+//         console.error("Error updating user details:", error);
+//         res.status(500).json({
+//             success: false,
+//             message: "Failed to update user details",
+//             error: error.message,
+//         });
+//     }
+// };
 
 
 //update user status by id
