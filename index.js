@@ -12,11 +12,17 @@ import userRoutes from "./routes/userRoutes.js";
 import payoutRoutes from "./routes/payoutRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
 import rankRoutes from "./routes/rankRoutes.js";
-
-
+import bodyParser from "body-parser";
+import { razorpayWebhook } from "./controllers/checkoutController.js";
 dotenv.config();
 
 const app = express();
+
+app.post(
+  "/api/razorpay/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  razorpayWebhook
+);
 
 export const instance = new Razorpay({
     key_id: process.env.RAZORPAY_API_KEY,
@@ -46,7 +52,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/rank", rankRoutes);
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
 });

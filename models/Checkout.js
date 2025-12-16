@@ -39,12 +39,14 @@ const checkoutSchema = new mongoose.Schema({
     },
     razorpay_payment_id: {
         type: String,
-        required: true
+        default: null,
     },
-    razorpay_signature: {
-        type: String,
-        required: true
-    },
+   
+    paymentStatus: {
+  type: String,
+  enum: ["pending", "paid", "failed"],
+  default: "pending"
+},
     createdAt: {
         type: Date,
         default: Date.now
