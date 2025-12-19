@@ -50,9 +50,6 @@ export const registerUser = async (req, res) => {
         }
 
 
-
-        
-
         // 3️⃣ Generate UserID and hash password
         const userId = await generateUniqueUserId();
         //const hashedPassword = await bcrypt.hash(password, 10);
@@ -140,18 +137,18 @@ export const registerUser = async (req, res) => {
 
 
         // Sending Mail
-        const subject = `Welcome to Synthosphere Academy, ${name || "User"}!`;
-        const html = `
-            <h2>Welcome to Synthosphere Academy</h2>
-            <p>Hi ${name || "there"},</p>
-            <p>Your account has been created successfully.</p>
-            <p><strong>User ID:</strong> ${userId}</p>
-            <p><strong>Password:</strong> ${password}</p>
-            <p>Login here: <a href="https://synthosphereacademy.com/login">https://synthosphereacademy.com/login</a></p>
-            <br/>
-        `;
+        // const subject = `Welcome to Synthosphere Academy, ${name || "User"}!`;
+        // const html = `
+        //     <h2>Welcome to Synthosphere Academy</h2>
+        //     <p>Hi ${name || "there"},</p>
+        //     <p>Your account has been created successfully.</p>
+        //     <p><strong>User ID:</strong> ${userId}</p>
+        //     <p><strong>Password:</strong> ${password}</p>
+        //     <p>Login here: <a href="https://synthosphereacademy.com/login">https://synthosphereacademy.com/login</a></p>
+        //     <br/>
+        // `;
 
-        await sendMail(email, subject, html);
+        // await sendMail(email, subject, html);
 
 
         // 9️⃣ Success response
